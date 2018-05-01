@@ -328,9 +328,11 @@ extension UIImageView {
 
                 if let image = response.result.value {
                     modifyImage?(image) { modifiedImage in
-                        strongSelf.run(imageTransition, with: modifiedImage)
-                        strongSelf.af_activeRequestReceipt = nil
-                        completion?(response)
+                        DispatchQueue.main.sync {
+                            strongSelf.run(imageTransition, with: modifiedImage)
+                            strongSelf.af_activeRequestReceipt = nil
+                            completion?(response)
+                        }
                     }
                 }
             }
