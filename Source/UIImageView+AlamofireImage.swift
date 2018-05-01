@@ -316,6 +316,7 @@ extension UIImageView {
             filter: filter,
             progress: progress,
             progressQueue: progressQueue,
+            modifyImage: modifyImage,
             completion: { [weak self] response in
                 guard
                     let strongSelf = self,
@@ -325,16 +326,13 @@ extension UIImageView {
                     completion?(response)
                     return
                 }
-
+                
                 if let image = response.result.value {
-                    modifyImage?(image) { modifiedImage in
-                        DispatchQueue.main.sync {
-                            strongSelf.run(imageTransition, with: modifiedImage)
-                            strongSelf.af_activeRequestReceipt = nil
-                            completion?(response)
-                        }
-                    }
+                    strongSelf.run(imageTransition, with: image)
                 }
+                
+                strongSelf.af_activeRequestReceipt = nil
+                completion?(response)
             }
         )
 

@@ -57,6 +57,9 @@ open class RequestReceipt {
 /// cached image representation. Additional advanced features include supporting multiple image filters and completion
 /// handlers for a single request.
 open class ImageDownloader {
+    /// The modify image handler closure used before caching an image to modify it beforehand.
+    public typealias ModifyImageHandler = (UIImage, @escaping ((UIImage) -> Void)) -> Void
+    
     /// The completion handler closure used when an image download completes.
     public typealias CompletionHandler = (DataResponse<Image>) -> Void
 
@@ -265,6 +268,7 @@ open class ImageDownloader {
         filter: ImageFilter? = nil,
         progress: ProgressHandler? = nil,
         progressQueue: DispatchQueue = DispatchQueue.main,
+        modifyImage: ModifyImageHandler?,
         completion: CompletionHandler?)
         -> RequestReceipt?
     {
@@ -356,18 +360,39 @@ open class ImageDownloader {
                                 filteredImage = image
                             }
 
-                            strongSelf.imageCache?.add(filteredImage, for: request, withIdentifier: filter?.identifier)
-
-                            DispatchQueue.main.async {
-                                let response = DataResponse<Image>(
-                                    request: response.request,
-                                    response: response.response,
-                                    data: response.data,
-                                    result: .success(filteredImage),
-                                    timeline: response.timeline
-                                )
-
-                                completion?(response)
+                            if let modifyImage = modifyImage {
+                                modifyImage(filteredImage) { modifiedImage in
+                                    DispatchQueue.main.sync {
+                                        strongSelf.imageCache?.add(modifiedImage, for: request, withIdentifier: filter?.identifier)
+                                        
+                                        DispatchQueue.main.async {
+                                            let response = DataResponse<Image>(
+                                                request: response.request,
+                                                response: response.response,
+                                                data: response.data,
+                                                result: .success(modifiedImage),
+                                                timeline: response.timeline
+                                            )
+                                            
+                                            completion?(response)
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                strongSelf.imageCache?.add(filteredImage, for: request, withIdentifier: filter?.identifier)
+                                
+                                DispatchQueue.main.async {
+                                    let response = DataResponse<Image>(
+                                        request: response.request,
+                                        response: response.response,
+                                        data: response.data,
+                                        result: .success(filteredImage),
+                                        timeline: response.timeline
+                                    )
+                                    
+                                    completion?(response)
+                                }
                             }
                         }
                     case .failure:
