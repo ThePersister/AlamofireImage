@@ -208,7 +208,7 @@ extension UIImageView {
         progressQueue: DispatchQueue = DispatchQueue.main,
         imageTransition: ImageTransition = .noTransition,
         runImageTransitionIfCached: Bool = false,
-        modifyImage: ((UIImage) -> UIImage)? = nil,
+        modifyImage: ((UIImage, (UIImage) -> Void)) -> Void)? = nil,
         completion: ((DataResponse<UIImage>) -> Void)? = nil)
     {
         af_setImage(
@@ -263,7 +263,7 @@ extension UIImageView {
         progressQueue: DispatchQueue = DispatchQueue.main,
         imageTransition: ImageTransition = .noTransition,
         runImageTransitionIfCached: Bool = false,
-        modifyImage: ((UIImage) -> UIImage)? = nil,
+        modifyImage: ((UIImage, (UIImage) -> Void)) -> Void)? = nil,
         completion: ((DataResponse<UIImage>) -> Void)? = nil)
     {
         guard !isURLRequestURLEqualToActiveRequestURL(urlRequest) else {
@@ -326,13 +326,13 @@ extension UIImageView {
                     return
                 }
 
-                if let image = response.result.value, let modifiedImage = modifyImage?(image) {
-                    strongSelf.run(imageTransition, with: modifiedImage)
+                if let image = response.result.value {
+                    modifyImage?(image) { modifiedImage in
+                        strongSelf.run(imageTransition, with: modifiedImage)
+                        strongSelf.af_activeRequestReceipt = nil
+                        completion?(response)
+                    }
                 }
-
-                strongSelf.af_activeRequestReceipt = nil
-
-                completion?(response)
             }
         )
 
