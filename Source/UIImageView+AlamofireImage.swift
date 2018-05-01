@@ -208,7 +208,7 @@ extension UIImageView {
         progressQueue: DispatchQueue = DispatchQueue.main,
         imageTransition: ImageTransition = .noTransition,
         runImageTransitionIfCached: Bool = false,
-        modifyImage: ((UIImage, ((UIImage) -> Void)) -> Void)? = nil,
+        modifyImage: ((UIImage, @escaping ((UIImage) -> Void)) -> Void)? = nil,
         completion: ((DataResponse<UIImage>) -> Void)? = nil)
     {
         af_setImage(
@@ -263,7 +263,7 @@ extension UIImageView {
         progressQueue: DispatchQueue = DispatchQueue.main,
         imageTransition: ImageTransition = .noTransition,
         runImageTransitionIfCached: Bool = false,
-        modifyImage: ((UIImage, ((UIImage) -> Void)) -> Void)? = nil,
+        modifyImage: ((UIImage, @escaping ((UIImage) -> Void)) -> Void)? = nil,
         completion: ((DataResponse<UIImage>) -> Void)? = nil)
     {
         guard !isURLRequestURLEqualToActiveRequestURL(urlRequest) else {
