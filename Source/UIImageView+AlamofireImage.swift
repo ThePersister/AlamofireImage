@@ -326,7 +326,7 @@ extension UIImageView {
                     return
                 }
 
-                if let image = response.result.value, let modifiedImage = modifyImage(image) {
+                if let image = response.result.value, let modifiedImage = modifyImage?(image) {
                     strongSelf.run(imageTransition, with: modifiedImage)
                 }
 
